@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>聊天界面</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .modal h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .form-group label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .form-group input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 20px;
+            background-color: #f7f7f7;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .modal-buttons button {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            margin: auto;
+        }
+
+        .modal-buttons button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .modal-buttons button[type="submit"]:hover {
+            background-color: #0069d9;
+        }
+
+        .modal-buttons button[type="button"] {
+            background-color: #f7f7f7;
+            color: #333;
+        }
+
+        .modal-buttons button[type="button"]:hover {
+            background-color: #e5e5e5;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .chat-header {
+            background-color: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chat-header button {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .chat-header button:hover {
+            background-color: #0069d9;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: scroll;
+            padding: 20px;
+        }
+
+        .message {
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            max-width: 70%;
+        }
+
+        .message {
+            background-color: #007bfc;
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .message a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .message a:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .message .message-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .message .message-info span {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .message .message-info .sender {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .message .message-info {
+            font-size: 12px;
+        }
+
+        .chat-form {
+            background-color: #fff;
+            border-top: 1px solid #e5e5e5;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-form input[type="text"] {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 20px;
+            background-color: #f7f7f7;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        .chat-form button {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .chat-form button:hover {
+            background-color: #0069d9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="overlay" id="login-overlay">
+        <div class="modal">
+            <h3>登录</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password">
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit">登录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>聊天室</h2>
+            <button id="login-btn">登录</button>
+        </div>
+
+        <div class="chat-messages">
+            <div class="message">
+                <div class="message-info" id="chat-messages">
+                    <span class="sender">Tom</span>
+                </div>
+                <p>你好，大家好！</p>
+            </div>
+            <div class="message me">
+                <div class="message-info">
+                    <span class="sender">我</span>
+                </div>
+                <p>大家好！</p>
+            </div>
+        </div>
+
+        <form class="chat-form" id="chat-form">
+            <input type="text" id="chat-input" placeholder="请输入消息...">
+            <button type="submit">发送</button>
+        </form>
+    </div>
+
+    <script>
+        var socket = new WebSocket("ws://" + window.location.hostname + ":8888/ws");
+        var login_name
+        var login_pwd
+        var chatroom
+        var sendbool = false
+        var login_data
+        var json
+        var chat_send = { "username": null, "message": null, "token": null }
+        socket.onmessage = function (event) {
+            var message = event.data;
+            chatroom = document.getElementById("chat-messages");
+            chatroom.innerHTML += "<p>" + message + "</p>";
+        };
+        document.getElementById("login-form").addEventListener("submit", function (event) {
+            var i = 1
+            event.preventDefault();
+            if (login_name !== null && sendbool) {
+                alert("你tm登录过了")
+            }
+            else {
+                login_name = document.getElementById("username").value;
+                chat_send.username = login_name
+                login_pwd = document.getElementById("password").value;
+                const Http = new XMLHttpRequest();
+                const url = '/login?name=' + login_name + "&pwd=" + login_pwd;
+                Http.open("GET", url);
+                Http.send();
+
+                Http.onreadystatechange = (e) => {
+                    login_data = Http.responseText;
+                    console.log(i);
+                    if (login_data !== "" && i == 1) {
+                        i++;
+                        json = JSON.parse(decodeURIComponent(login_data));
+                        console.log(json);
+                        chat_send.token = json.uuid;
+                        if (json.err === null) {
+                            document.getElementById("login-overlay").style.display = "none";
+                            socket.send(login_name + " 已上线");
+                            sendbool = true;
+                        }
+                        else {
+                            alert(json.err)
+                        }
+                    }
+                }
+            }
+        })
+        document.getElementById("chat-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            var messageInput = document.getElementById("chat-input");
+            var message = messageInput.value;
+            if (login_name !== null && sendbool && chat_send.token !== null) {
+                chat_send.message = message
+                socket.send(JSON.stringify(chat_send));
+                chat_send.message = ""
+            }
+            else {
+                alert("你tm给我登录")
+            }
+            messageInput.value = "";
+        });
+    </script>
+</body>
+
+</html>

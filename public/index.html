@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Web Chatroom</title>
+</head>
+<body>
+    <h1>Web Chatroom</h1>
+
+    <div id="chatroom"></div>
+
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="请输入消息...">
+        <button type="submit">发送</button>
+    </form>
+
+    <script>
+        var socket = new WebSocket("ws://" + window.location.hostname + ":8088/ws");
+
+        socket.onmessage = function(event) {
+            var message = event.data;
+            var chatroom = document.getElementById("chatroom");
+            chatroom.innerHTML += "<p>" + message + "</p>";
+        };
+
+        document.getElementById("message-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            var messageInput = document.getElementById("message-input");
+            var message = messageInput.value;
+
+            socket.send(message);
+
+            messageInput.value = "";
+        });
+    </script>
+</body>
+</html>
