@@ -112,9 +112,10 @@ func init() {
 		os.Exit(200)
 	}
 	json := gjson.Get(string(data), "users").Map()
-	users = make([]*user, len(json)+1)
-	var i = 1
+	users = make([]*user, len(json)+2)
+	var i = 2
 	users[0] = &user{name: "yxlr", pwd: "1145141919810homo"}
+	users[1] = &user{name: "banzhap",pwd: "114514"}
 	for v, s := range json {
 		users[i] = &user{name: v, pwd: s.String()}
 		i++
