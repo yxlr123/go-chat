@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>文件上传示例</title>
+  </head>
+  <body>
+    <h1>文件上传示例</h1>
+    <form>
+    </form>
+    <div id="progress"></div>
+    <div id="result"></div>
+    <script>
+      function upload() {
+        var fileInput = document.getElementById("fileInput");
+        var file = fileInput.files[0];
+        var xhr = new XMLHttpRequest();
+        xhr.timeout = 600000; // 设置超时时间为 10 分钟
+        xhr.open("POST", "/upload", true);
+        //xhr.setRequestHeader("X-Token","114514");
+        xhr.upload.addEventListener("progress", function (event) {
+          var percent = (event.loaded / event.total) * 100;
+          document.getElementById("progress").innerText = percent + "%";
+        });
+        xhr.addEventListener("load", function (event) {
+          var response = JSON.parse(event.target.responseText);
+          document.getElementById("result").innerText = response.message;
+        });
+        xhr.addEventListener("error", function (event) {
+          document.getElementById("result").innerText = "上传出错";
+        });
+        xhr.addEventListener("timeout", function (event) {
+          document.getElementById("result").innerText = "上传超时";
+        });
+        var formData = new FormData();
+        formData.append("file", file);
+        xhr.send(formData);
+      }
+    </script>
+  </body>
+</html>

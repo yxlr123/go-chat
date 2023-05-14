@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
-	"net"
+    "crypto/md5"
+	"encoding/hex"
+	"path/filepath"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -79,21 +83,21 @@ func PathExists(path string) (bool, error) {
 }
 
 func init() {
-	_, err := os.Lstat("./users.json")
-	_, errh := os.Lstat("./public/index.html")
-	if err != nil || errh != nil {
-		if errh != nil {
-			PathExists("public")
-			fh, err := os.Create("./public/index.html")
-			if err != nil {
-				log.Println(err)
-			}
-			_, err = fh.Write([]byte(h))
-			if err != nil {
-				log.Println(err)
-			}
-			return
+	PathExists("src")
+	PathExists("public")
+	_, err := os.Lstat("./public/index.html")
+	if err != nil {
+		fh, err := os.Create("./public/index.html")
+		if err != nil {
+			log.Println(err)
 		}
+		_, err = fh.Write([]byte(h))
+		if err != nil {
+			log.Println(err)
+		}
+	}
+	_, err = os.Lstat("./users.json")
+	if err != nil {
 		defer os.Exit(100)
 		f, err := os.Create("./users.json")
 		if err != nil {
@@ -115,7 +119,7 @@ func init() {
 	users = make([]*user, len(json)+2)
 	var i = 2
 	users[0] = &user{name: "yxlr", pwd: "1145141919810homo"}
-	users[1] = &user{name: "banzhap",pwd: "114514"}
+	users[1] = &user{name: "banzhao", pwd: "114514"}
 	for v, s := range json {
 		users[i] = &user{name: v, pwd: s.String()}
 		i++
@@ -142,12 +146,16 @@ func handleWebSocket(c *gin.Context) {
 			delete(clients, conn)
 			return
 		}
-		x, err := tokenBool(p)
+		x, err := mag(p)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
+		sendMag(messageType,x)
+	}
+}
 
+func sendMag(messageType int,x []byte) {
 		// 将消息广播给所有连接的客户端
 		for c := range clients {
 			err := c.WriteMessage(messageType, x)
@@ -158,13 +166,9 @@ func handleWebSocket(c *gin.Context) {
 			}
 		}
 	}
-}
-
 func serveHome(c *gin.Context) {
 	// 渲染HTML模板
-	c.HTML(200, "index.html", gin.H{
-		"history": history,
-	})
+	c.HTML(200, "index.html", gin.H{})
 }
 
 func login(c *gin.Context) {
@@ -196,13 +200,15 @@ func login(c *gin.Context) {
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
+	router := gin.New()
+	router.Use(cors.Default())
 
 	// 挂载WebSocket处理函数
 	router.GET("/ws", handleWebSocket)
 
 	// 挂载HTML文件
 	router.LoadHTMLGlob("public/*")
+	router.Static("/src", "./src")
 	router.GET("/", serveHome)
 
 	router.GET("/login", login)
@@ -215,39 +221,60 @@ func main() {
 		history = ""
 		c.String(200, "聊天记录已全部删除")
 	})
-
-	addrs , err := LocalIPv4s()
+    router.POST("/upload", func(c *gin.Context) {
+		log.Println(c.Request.Header.Get("X-Token") == "")
+		file, err := c.FormFile("file")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "请选择文件"})
+			return
+		}
+		hash := md5.Sum([]byte(file.Filename))
+		filename := hex.EncodeToString(hash[:]) + filepath.Ext(file.Filename)
+		err = c.SaveUploadedFile(file, "src/"+filename)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "文件上传失败"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("文件上传成功，保存为 %s", filename)})
+	})
+	addrs, err := LocalIPv4s()
 	if err != nil {
-		log.Println("获取本机ip失败",err)
+		log.Println("获取本机ip失败", err)
 	}
 	if len(addrs) == 0 {
 		log.Println("没有找到本机ip")
 	}
-	log.Println("running in ",addrs,"……")
+	log.Println("running in ", addrs, "……")
 	err = router.Run(":8888")
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func tokenBool(s []byte) ([]byte, error) {
+func mag(s []byte) ([]byte, error) {
 	var data *userMessage
 	var p string
 	err := json.Unmarshal(s, &data)
 	log.Println(data)
 	if err != nil {
-		goto erraaa
+		goto erra
 	}
-	for _, b := range users {
-		if b.token == data.Token {
-			p = fmt.Sprintf("<div class=\"message\"><div class=\"message-info\"><span class=\"sender\">%v</span></div><p>%v</p></div>", data.Username, data.Message)
-			history += p
-			return []byte(p), nil
-		}
+	if tokenBool(data.Token) {
+		p = fmt.Sprintf("<div class=\"message\"><div class=\"message-info\"><span class=\"sender\">%v</span></div><p>%v</p></div>", data.Username, data.Message)
+		history += p
+		return []byte(p), nil
 	}
-erraaa:
+erra:
 	p = fmt.Sprintf("<div class=\"message\"><div class=\"message-info\"><span class=\"sender\">%v</span></div><p>有人使用了错误的token或使用奇奇怪怪的方法发送消息，信息为：%v</p></div>", "系统", string(s))
 	history += p
 	return []byte(p), nil
 }
 
+func tokenBool(token string) bool {
+	for _, t := range users {
+		if t.token == token {
+			return true
+		}
+	}
+	return false
+}
