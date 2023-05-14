@@ -193,7 +193,7 @@
         margin-right: 10px;
       }
 
-      .chat-form button {
+      .chat-form button{
         border: none;
         outline: none;
         font-size: 16px;
@@ -204,6 +204,19 @@
         transition: all 0.3s ease;
         background-color: #007bff;
         color: #fff;
+      }
+
+      .fileButton {
+        border: none;
+        outline: none;
+        font-size: 16px;
+        font-style: 600;
+        padding: 10px 20px;
+        color: #fff;
+        background-color: #0069d9;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
       }
 
       .chat-form button:hover {
@@ -242,10 +255,10 @@
       <form class="chat-form" id="chat-form">
         <input type="text" id="chat-input" placeholder="请输入消息..." />
         <button type="submit">发送</button>
-        <button type="submit"></button>
       </form>
+      <button class="fileButton" id="fileButton" type="submit">上传文件</button>
     </div>
-    <div class="overlay">
+    <div class="overlay" style="display: none;" id="fileUp">
       <div class="modal">
         <h2>上传文件</h2>
         <h3 id="progress"></h3>
@@ -253,6 +266,7 @@
           <input type="file" id="fileInput" name="fileInput" />
           <button type="button" onclick="upload()">上传</button>
         </form>
+        <button type="button" id="xxx">关闭</button>
       </div>
     </div>
     <script>
@@ -362,6 +376,12 @@
         formData.append("file", file);
         xhr.send(formData);
       }
+      document.getElementById("fileButton").addEventListener("click", function (event) {
+        document.getElementById("fileUp").style.display="flex";
+      });
+      document.getElementById("xxx").addEventListener("click", function (event) {
+      document.getElementById("fileUp").style.display="none";
+      });
     </script>
   </body>
 </html>
