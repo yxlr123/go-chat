@@ -174,12 +174,20 @@
         font-size: 12px;
       }
 
-      .chat-form {
+      .chat-div {
         background-color: #fff;
         border-top: 1px solid #e5e5e5;
         padding: 20px;
         display: flex;
         align-items: center;
+        display: flex;
+        width: 100%;
+
+      }
+      .chat-form {
+        flex: auto;
+        display: flex;
+        margin-right: 10px;
       }
 
       .chat-form input[type="text"] {
@@ -193,7 +201,7 @@
         margin-right: 10px;
       }
 
-      .chat-form button{
+      .chat-form button {
         border: none;
         outline: none;
         font-size: 16px;
@@ -213,7 +221,7 @@
         font-style: 600;
         padding: 10px 20px;
         color: #fff;
-        background-color: #0069d9;
+        background-color: #007bfc;
         border-radius: 20px;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -251,14 +259,17 @@
       </div>
 
       <div class="chat-messages" id="chat-messages"></div>
-
-      <form class="chat-form" id="chat-form">
-        <input type="text" id="chat-input" placeholder="请输入消息..." />
-        <button type="submit">发送</button>
-      </form>
-      <button class="fileButton" id="fileButton" type="submit">上传文件</button>
+      <div class="chat-div">
+        <form class="chat-form" id="chat-form">
+          <input type="text" id="chat-input" placeholder="请输入消息..." />
+          <button type="submit">发送</button>
+        </form>
+        <button class="fileButton" id="fileButton" type="submit">
+          上传文件
+        </button>
+      </div>
     </div>
-    <div class="overlay" style="display: none;" id="fileUp">
+    <div class="overlay" style="display: none" id="fileUp">
       <div class="modal">
         <h2>上传文件</h2>
         <h3 id="progress"></h3>
@@ -376,12 +387,16 @@
         formData.append("file", file);
         xhr.send(formData);
       }
-      document.getElementById("fileButton").addEventListener("click", function (event) {
-        document.getElementById("fileUp").style.display="flex";
-      });
-      document.getElementById("xxx").addEventListener("click", function (event) {
-      document.getElementById("fileUp").style.display="none";
-      });
+      document
+        .getElementById("fileButton")
+        .addEventListener("click", function (event) {
+          document.getElementById("fileUp").style.display = "flex";
+        });
+      document
+        .getElementById("xxx")
+        .addEventListener("click", function (event) {
+          document.getElementById("fileUp").style.display = "none";
+        });
     </script>
   </body>
 </html>
