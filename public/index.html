@@ -281,9 +281,16 @@
       </div>
     </div>
     <script>
+      if (document.location.protocol == "https:")
+      {
       var socket = new WebSocket(
-        "ws://" + window.location.hostname + ":8888/ws"
+        "ws://" + document.location.host + "/ws"
       );
+      } else {
+        var socket = new WebSocket(
+        "ws://" + document.location.host + "/ws"
+      );
+      }
       var login_name;
       var login_pwd;
       var chatroom;
